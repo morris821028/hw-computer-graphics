@@ -22,7 +22,6 @@ void main(void) {
     //vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
     gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
     
-    vec3 lightWeighting;
     vec3 lightDirection = normalize(uPointLightingLocation - (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz);
     vec3 normal = normalize(uNMatrix * aVertexNormal);
 
@@ -35,7 +34,7 @@ void main(void) {
     
 
     float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
-     lightWeighting = uAmbientColor
+    vec3 lightWeighting = uAmbientColor
         + uPointLightingSpecularColor * specularLightWeighting
         + uPointLightingDiffuseColor * diffuseLightWeighting;       
 
