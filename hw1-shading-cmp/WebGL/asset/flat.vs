@@ -12,14 +12,6 @@ varying vec3 vNormalDirection;
 varying vec3 vVertexPosition;
 
 uniform vec3 uPointLightingLocation;
-/*
-uniform float uMaterialShininess;
-
-uniform vec3 uAmbientColor;
-
-uniform vec3 uPointLightingSpecularColor;
-uniform vec3 uPointLightingDiffuseColor;
-*/
 
 uniform sampler2D uSampler;
 void main(void) {
@@ -27,8 +19,8 @@ void main(void) {
 
     vNormalDirection = normalize(uNMatrix * aVertexNormal);
     vVertexPosition = (uMVMatrix * vec4(aVertexPosition, 1.0)).xyz;
-	vLightDirection = normalize((uMVMatrix * vec4((uPointLightingLocation - aVertexPosition), 1.0)).xyz);
+	vLightDirection = normalize(uPointLightingLocation-(uMVMatrix * vec4((aVertexPosition), 1.0)).xyz);
 
     vec4 fragmentColor = texture2D(uSampler, vec2(aTextureCoord.s, aTextureCoord.t));
-    vFragcolor = vec4(fragmentColor.rgb, fragmentColor.a);
+    vFragcolor = fragmentColor;
 }

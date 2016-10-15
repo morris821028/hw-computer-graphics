@@ -47,7 +47,7 @@
         // var text = loadFile("asset/triangle.json");
         return handleLoadedTeapot(JSON.parse(text));
     }
-    function loadShader(vs_path, fs_path) {
+    function loadShaderSource(vs_path, fs_path) {
         vs_src = loadFile(vs_path);
         fs_src = loadFile(fs_path);
     }
@@ -69,15 +69,21 @@
         }
     }
 
-    var shaderProgram;
-
-    function initShaders(shading_method) {
-        loadShader("asset/" + shading_method + ".vs", "asset/" + shading_method + ".fs");
+    var shader;
+    function loadShaders() {
+        shader = {
+            flat: initShader('flat'),
+            gouraud: initShader('gouraud'),
+            phong: initShader('phong'),
+        };
+    }
+    function initShader(shading_method) {
+        loadShaderSource("asset/" + shading_method + ".vs", "asset/" + shading_method + ".fs");
 
         var fragmentShader = makeShader(gl, fs_src, gl.FRAGMENT_SHADER);
         var vertexShader = makeShader(gl, vs_src, gl.VERTEX_SHADER);
 
-        shaderProgram = gl.createProgram();
+        var shaderProgram = gl.createProgram();
         gl.attachShader(shaderProgram, vertexShader);
         gl.attachShader(shaderProgram, fragmentShader);
         gl.linkProgram(shaderProgram);
@@ -107,6 +113,7 @@
         shaderProgram.pointLightingLocationUniform = gl.getUniformLocation(shaderProgram, "uPointLightingLocation");
         shaderProgram.pointLightingSpecularColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingSpecularColor");
         shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
+        return shaderProgram;
     }
 
 
@@ -148,7 +155,7 @@
     var pMatrix = mat4.create();
 
 
-    function setMatrixUniforms() {
+    function setMatrixUniforms(shaderProgram) {
         gl.uniformMatrix4fv(shaderProgram.pMatrixUniform, false, pMatrix);
         gl.uniformMatrix4fv(shaderProgram.mvMatrixUniform, false, mvMatrix);
 
@@ -211,16 +218,8 @@
     function drawAxis() {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
     }
-    function drawScene() {
-        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
-        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        if (teapotVertexPositionBuffer == null || teapotVertexNormalBuffer == null || teapotVertexTextureCoordBuffer == null || teapotVertexIndexBuffer == null) {
-            return;
-        }
-
-        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
-
+    function setShaderAttribute(shaderProgram) {
         gl.uniform3f(
             shaderProgram.ambientColorUniform,
             parseFloat(document.getElementById("ambientR").value),
@@ -248,16 +247,6 @@
             parseFloat(document.getElementById("diffuseG").value),
             parseFloat(document.getElementById("diffuseB").value)
         );
-        
-
-
-        mat4.identity(mvMatrix);
-
-        mat4.translate(mvMatrix, [0, 0, eyeview.z]);
-        mat4.rotate(mvMatrix, degToRad(eyeview.xRot), [1, 0, 0]);
-        mat4.rotate(mvMatrix, degToRad(eyeview.yRot), [0, 1, 0]);
-
-        mat4.multiply(mvMatrix, sphereRotationMatrix);
 
         gl.activeTexture(gl.TEXTURE0);
 
@@ -276,8 +265,41 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
         gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+    }
+
+    function drawSceneBegin() {
+        gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
+        gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    }
+    function drawSceneEnd() {
+
+    }
+    function drawScene(shaderProgram, extraMvArr, extraScArr) {
+        if (teapotVertexPositionBuffer == null || 
+            teapotVertexNormalBuffer == null || 
+            teapotVertexTextureCoordBuffer == null || 
+            teapotVertexIndexBuffer == null) {
+            return;
+        }
+
+        mat4.perspective(45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix);
+        
+        gl.useProgram(shaderProgram);
+
+        setShaderAttribute(shaderProgram);
+
+        mat4.identity(mvMatrix);
+
+        mat4.translate(mvMatrix, [0, 0, eyeview.z]);
+        mat4.translate(mvMatrix, extraMvArr);
+        mat4.scale(mvMatrix, extraScArr);
+        mat4.rotate(mvMatrix, degToRad(eyeview.xRot), [1, 0, 0]);
+        mat4.rotate(mvMatrix, degToRad(eyeview.yRot), [0, 1, 0]);
+
+        mat4.multiply(mvMatrix, sphereRotationMatrix);
+
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, teapotVertexIndexBuffer);
-        setMatrixUniforms();
+        setMatrixUniforms(shaderProgram);
         gl.drawElements(gl.TRIANGLES, teapotVertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0);
     }
 
@@ -382,7 +404,15 @@
     function tick() {
         requestAnimFrame(tick);
         handleKeys();
-        drawScene();
+
+        var selectShader = shader[document.querySelector('input[name="optionsShading"]:checked').value];
+        drawSceneBegin();
+        drawScene(selectShader, [0, 5, 0], [1, 1, 1]);
+        drawScene(shader['flat'], [-20, -15, -20], [0.5, 0.5, 0.5]);
+        drawScene(shader['gouraud'], [0, -15, -20], [0.5, 0.5, 0.5]);
+        drawScene(shader['phong'], [20, -15, -20], [0.5, 0.5, 0.5]);
+        drawSceneEnd();
+
         animate();
     }
 
@@ -390,7 +420,8 @@
     function webGLStart() {
         var canvas = document.getElementById("ICG-canvas");
         initGL(canvas);
-        initShaders(document.querySelector('input[name="optionsShading"]:checked').value);
+        loadShaders();
+        // initShaders(document.querySelector('input[name="optionsShading"]:checked').value);
         initTextures();
         loadTeapot();
 
@@ -451,12 +482,11 @@ canvas {
             <label for="option-1" class="pure-radio">
                 <input id="option-1" type="radio" name="optionsShading" onclick="handleShading(this);" value="flat" checked> Flat
             </label>
-
-            <label for="option-2" class="pure-radio">
-                <input id="option-2" type="radio" name="optionsShading" onclick="handleShading(this);" value="phong" > Phong
-            </label>
             <label for="option-3" class="pure-radio">
                 <input id="option-3" type="radio" name="optionsShading" onclick="handleShading(this);" value="gouraud"> Gouraud
+            </label>
+            <label for="option-2" class="pure-radio">
+                <input id="option-2" type="radio" name="optionsShading" onclick="handleShading(this);" value="phong" > Phong
             </label>
         </form>
     </div>
