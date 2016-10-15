@@ -36,7 +36,7 @@ void main(void) {
     float diffuseLightWeighting = max(dot(normal, lightDirection), 0.0);
     vec3 lightWeighting = uAmbientColor
         + uPointLightingSpecularColor * specularLightWeighting
-        + uPointLightingDiffuseColor * diffuseLightWeighting;       
+        + uPointLightingDiffuseColor * diffuseLightWeighting;
 
     vec4 fragmentColor;
     fragmentColor = texture2D(uSampler, vec2(aTextureCoord.s, aTextureCoord.t));
