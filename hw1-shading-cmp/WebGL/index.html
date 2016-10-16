@@ -469,14 +469,14 @@ canvas {
 <body onload="webGLStart();">
 
 <div class="pure-g">
-    <div class="pure-u-1">
+    <div class="pure-u-1" style="padding: 20px;margin: 5%;">
         <canvas id="ICG-canvas" style="border: none;" width="800" height="600"></canvas>
         <div id="loadingtext">Loading world...</div>
     </div>
 </div>
 
 <div class="pure-g">
-    <div class="pure-u-1">
+    <div class="pure-u-1" style="padding: 20px;margin: 5%;">
         <form class="pure-form">
             <legend>Shading</legend>
             <label for="option-1" class="pure-radio">
@@ -489,42 +489,155 @@ canvas {
                 <input id="option-2" type="radio" name="optionsShading" onclick="handleShading(this);" value="phong" > Phong
             </label>
         </form>
+        <form class="pure-form pure-form-aligned">
+            <legend>Material</legend>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="shininess" class="pure-range"> Shininess </label>
+                    <input type="range" id="shininess" value="32.0" min="0" max="100" step="0.5" oninput="showValue(this.value, 'shininess-val');">
+                    <span id="shininess-val"></span>
+                </div>
+            </fieldset>
+        </form>
+        <form class="pure-form pure-form-aligned">
+            <legend>Point Light Location</legend>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="lightPositionX" class="pure-range">X </label>
+                    <input type="range" id="lightPositionX" value="-10.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionX-val');">
+                    <span id="lightPositionX-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionY" class="pure-range">Y </label>
+                    <input type="range" id="lightPositionY" value="4.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionY-val');">
+                    <span id="lightPositionY-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionZ" class="pure-range">Z </label> 
+                    <input type="range" id="lightPositionZ" value="-20.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionZ-val');">
+                <span id="lightPositionZ-val"></span>
+                </div>
+            </fieldset>
+        </form>
+        <form class="pure-form pure-form-aligned">
+            <legend>Specular Colour</legend>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="specularR" class="pure-range"> R </label>
+                    <input type="range" id="specularR" value="0.8" min="0" max="1" step="0.01" oninput="showValue(this.value, 'specularR-val');">
+                    <span id="specularR-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="specularG" class="pure-range"> G </label>
+                    <input type="range" id="specularG" value="0.8" min="0" max="1" step="0.01" oninput="showValue(this.value, 'specularG-val');">    
+                    <span id="specularG-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="specularB" class="pure-range"> B </label>
+                    <input type="range" id="specularB" value="0.8" min="0" max="1" step="0.01" oninput="showValue(this.value, 'specularB-val');">
+                    <span id="specularB-val"></span>
+                </div>
+            </fieldset>
+        </form>
+        <form class="pure-form pure-form-aligned">
+            <legend>Diffuse Colour</legend>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="diffuseR" class="pure-range"> R </label>
+                    <input type="range" id="diffuseR" value="0.8" min="0" max="1" step="0.01">
+                    <span id="diffuseR-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="diffuseG" class="pure-range"> G </label>
+                    <input type="range" id="diffuseG" value="0.8" min="0" max="1" step="0.01">
+                    <span id="diffuseG-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="diffuseB" class="pure-range"> B </label>
+                    <input type="range" id="diffuseB" value="0.8" min="0" max="1" step="0.01">
+                    <span id="diffuseB-val"></span>
+                </div>
+            </fieldset>
+        </form>
+        <form class="pure-form pure-form-aligned">
+            <legend>Ambient Light Colour</legend>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="ambientR" class="pure-range"> R </label>
+                    <input type="range" id="ambientR" value="0.2" min="0" max="1" step="0.01">
+                    <span id="ambientR-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="ambientG" class="pure-range"> G </label>
+                    <input type="range" id="ambientG" value="0.2" min="0" max="1" step="0.01">
+                    <span id="ambientG-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="ambientB" class="pure-range"> B </label>
+                    <input type="range" id="ambientB" value="0.2" min="0" max="1" step="0.01">
+                    <span id="ambientB-val"></span>
+                </div>
+            </fieldset>
+        </form>
     </div>
 </div>
 
-
-    <br/>
-    <table style="border: 0; padding: 10px;">
-        <tr>
-            <td><b>Material:</b>
-            <td><input type="text" id="shininess" value="32.0" />
-        </tr>
-		<tr>
-            <td><b>Point Light Location:</b>
-            <td>X: <input type="text" id="lightPositionX" value="-10.0" />
-            <td>Y: <input type="text" id="lightPositionY" value="4.0" />
-            <td>Z: <input type="text" id="lightPositionZ" value="-20.0" />
-        </tr>
-        <tr>
-            <td><b>Specular Colour:</b>
-            <td>R: <input type="text" id="specularR" value="0.8" />
-            <td>G: <input type="text" id="specularG" value="0.8" />
-            <td>B: <input type="text" id="specularB" value="0.8" />
-        </tr>
-        <tr>
-            <td><b>Diffuse Colour:</b>
-            <td>R: <input type="text" id="diffuseR" value="0.8" />
-            <td>G: <input type="text" id="diffuseG" value="0.8" />
-            <td>B: <input type="text" id="diffuseB" value="0.8" />
-        </tr>
-		<tr>
-            <td><b>Ambient Light Colour:</b>
-            <td>R: <input type="text" id="ambientR" value="0.2" />
-            <td>G: <input type="text" id="ambientG" value="0.2" />
-            <td>B: <input type="text" id="ambientB" value="0.2" />
-        </tr>
-    </table>
-    <br/>
+<script type="text/javascript">
+function showValue(newValue, tagId) {
+    document.getElementById(tagId).innerHTML=newValue;
+}
+var webGLconfig = [
+    {
+        tag: 'shininess', value: 32.0
+    },
+    {
+        tag: 'lightPositionX', value: -10.0
+    },
+    {
+        tag: 'lightPositionY', value: 4.0
+    },
+    {
+        tag: 'lightPositionZ', value: -20.0
+    },
+    {
+        tag: 'specularR', value: 0.8
+    },
+    {
+        tag: 'specularG', value: 0.8
+    },
+    {
+        tag: 'specularB', value: 0.8
+    },
+    {
+        tag: 'diffuseR', value: 0.8
+    },
+    {
+        tag: 'diffuseG', value: 0.8
+    },
+    {
+        tag: 'diffuseB', value: 0.8
+    },
+    {
+        tag: 'ambientR', value: 0.2
+    },
+    {
+        tag: 'ambientG', value: 0.2
+    },
+    {
+        tag: 'ambientB', value: 0.2
+    },
+];
+function setDefaultConfig() {
+    for (var i in webGLconfig) {
+        var tagId = webGLconfig[i].tag;
+        var newValue = webGLconfig[i].value;
+        console.log(webGLconfig[i]);
+        document.getElementById(tagId).value=newValue;
+        document.getElementById(tagId + '-val').innerHTML=newValue;
+    }
+}
+setDefaultConfig();
+</script>
 </body>
 
 </html>
