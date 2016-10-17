@@ -91,11 +91,13 @@ int main(int argc, char *argv[]) {
 				t.vxyz[i][j] = f[j];
 				t.nxyz[i][j] = f[j+3];
 			}
-			float sc = 15.f;
-			t.vxyz[i][2] -= 250;
+			float sc = 5.f;
+			t.vxyz[i][0] -= 400.0f * 10;
 			t.vxyz[i][0] /= sc;
+			t.vxyz[i][0] -= 220.0f;
 			t.vxyz[i][1] /= sc;
-			t.vxyz[i][1] -= 10.0f;
+			t.vxyz[i][1] -= 750.0f;
+			t.vxyz[i][2] -= 500.0f;
 			t.vxyz[i][2] /= sc;
 		}
 		A.push_back(t);

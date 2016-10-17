@@ -45,6 +45,8 @@
     function loadTeapot() {
         var text = loadFile("asset/teapot.json");
         // var text = loadFile("asset/triangle.json");
+        // var text = loadFile("asset/Pot.json");
+        // var text = loadFile("asset/Patchair.json");
         return handleLoadedTeapot(JSON.parse(text));
     }
     function loadShaderSource(vs_path, fs_path) {
@@ -474,6 +476,8 @@ body {
     color: rgb(119, 119, 119);
     font-family: sans-serif;
     font-size: 18px;
+    margin: auto;
+    padding: auto;
 }
 </style>
 
@@ -483,7 +487,7 @@ body {
 
 <body onload="webGLStart();">
 
-<div class="pure-g">
+<div class="pure-g" style="margin: auto;">
     <div class="pure-u-1-2" style="overflow: auto;">
         <canvas id="ICG-canvas" style="border: none;" width="800" height="600"></canvas>
         <div id="loadingtext">Loading world...</div>
