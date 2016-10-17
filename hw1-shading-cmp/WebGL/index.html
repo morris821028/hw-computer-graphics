@@ -1,15 +1,15 @@
 <html>
 
 <head>
-<title>ICG WebGL &mdash; HW1</title>
-<meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <title>ICG WebGL &mdash; HW1</title>
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script type="text/javascript" src="javascripts/glMatrix-0.9.5.min.js"></script>
+    <script type="text/javascript" src="javascripts/webgl-utils.js"></script>
+    <script type="text/javascript" src="javascripts/vue.min.js"></script>
 
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script type="text/javascript" src="javascripts/glMatrix-0.9.5.min.js"></script>
-<script type="text/javascript" src="javascripts/webgl-utils.js"></script>
-<script type="text/javascript" src="javascripts/vue.min.js"></script>
-
-<link rel="stylesheet" href="stylesheets/pure-0.6.0/pure-min.css">
+    <link rel="stylesheet" href="stylesheets/pure-0.6.0/pure-min.css">
 
 <script type="text/javascript">
 
@@ -110,6 +110,7 @@
         shaderProgram.materialShininessUniform = gl.getUniformLocation(shaderProgram, "uMaterialShininess");
  
         shaderProgram.ambientColorUniform = gl.getUniformLocation(shaderProgram, "uAmbientColor");
+        shaderProgram.pointLightingEnabledUniform = gl.getUniformLocation(shaderProgram, "uPointEnabled");
         shaderProgram.pointLightingLocationUniform = gl.getUniformLocation(shaderProgram, "uPointLightingLocation");
         shaderProgram.pointLightingSpecularColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingSpecularColor");
         shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
@@ -227,11 +228,20 @@
             parseFloat(document.getElementById("ambientB").value)
         );
 
-        gl.uniform3f(
-            shaderProgram.pointLightingLocationUniform,
-            parseFloat(document.getElementById("lightPositionX").value),
-            parseFloat(document.getElementById("lightPositionY").value),
-            parseFloat(document.getElementById("lightPositionZ").value)
+        // two light source
+        var lightLocationArray = [],
+            lightEnabledArray = [];
+        for (var i = 0; i < 3; i++) {
+            lightLocationArray.push(parseFloat(document.getElementById("lightPositionX-" + i).value));
+            lightLocationArray.push(parseFloat(document.getElementById("lightPositionY-" + i).value));
+            lightLocationArray.push(parseFloat(document.getElementById("lightPositionZ-" + i).value));
+            lightEnabledArray.push(Boolean(document.getElementById('lightPoint-' + i + '-enable').checked) ? 1.0 : 0.0);
+        }
+        gl.uniform3fv(
+            shaderProgram.pointLightingLocationUniform,  lightLocationArray
+        );
+        gl.uniform1fv(
+            shaderProgram.pointLightingEnabledUniform, lightEnabledArray
         );
 
         gl.uniform3f(
@@ -460,6 +470,11 @@ canvas {
     margin-right: auto;
     display: block;
 }
+body {
+    color: rgb(119, 119, 119);
+    font-family: sans-serif;
+    font-size: 18px;
+}
 </style>
 
 
@@ -475,20 +490,28 @@ canvas {
     </div>
 </div>
 
-<div class="pure-g">
-    <div class="pure-u-1" style="padding: 20px;margin: 5%;">
+<div class="pure-g"  style="padding: 20px;margin: 5%;">
+    <div class="pure-u-1">
+        <button class="pure-button" onclick="setDefaultConfig()">Default</button>
+    </div>
+    <div class="pure-u-1">
         <form class="pure-form">
             <legend>Shading</legend>
             <label for="option-1" class="pure-radio">
                 <input id="option-1" type="radio" name="optionsShading" onclick="handleShading(this);" value="flat" checked> Flat
             </label>
-            <label for="option-3" class="pure-radio">
-                <input id="option-3" type="radio" name="optionsShading" onclick="handleShading(this);" value="gouraud"> Gouraud
-            </label>
             <label for="option-2" class="pure-radio">
-                <input id="option-2" type="radio" name="optionsShading" onclick="handleShading(this);" value="phong" > Phong
+                <input id="option-2" type="radio" name="optionsShading" onclick="handleShading(this);" value="gouraud"> Gouraud
+            </label>
+            <label for="option-3" class="pure-radio">
+                <input id="option-3" type="radio" name="optionsShading" onclick="handleShading(this);" value="phong" > Phong
             </label>
         </form>
+    </div>
+</div>
+
+<div class="pure-g" style="padding: 20px;margin: 5%;">
+    <div class="pure-u-1" id="light-setting">
         <form class="pure-form pure-form-aligned">
             <legend>Material</legend>
             <fieldset>
@@ -500,22 +523,70 @@ canvas {
             </fieldset>
         </form>
         <form class="pure-form pure-form-aligned">
-            <legend>Point Light Location</legend>
+            <legend>Point Light Location <a href="https://en.wikipedia.org/wiki/Three-point_lighting">Wikipedia - Three-point lighting</a></legend>
             <fieldset>
                 <div class="pure-control-group">
-                    <label for="lightPositionX" class="pure-range">X </label>
-                    <input type="range" id="lightPositionX" value="-10.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionX-val');">
-                    <span id="lightPositionX-val"></span>
+                    <label for="lightPoint-0-enable" class="pure-checkbox">L1</label>
+                    <input id="lightPoint-0-enable" type="checkbox"> Main Light
                 </div>
                 <div class="pure-control-group">
-                    <label for="lightPositionY" class="pure-range">Y </label>
-                    <input type="range" id="lightPositionY" value="4.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionY-val');">
-                    <span id="lightPositionY-val"></span>
+                    <label for="lightPoint-1-enable" class="pure-checkbox">L2</label>
+                    <input id="lightPoint-1-enable" type="checkbox"> Key Light
                 </div>
                 <div class="pure-control-group">
-                    <label for="lightPositionZ" class="pure-range">Z </label> 
-                    <input type="range" id="lightPositionZ" value="-20.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionZ-val');">
-                <span id="lightPositionZ-val"></span>
+                    <label for="lightPoint-2-enable" class="pure-checkbox">L3</label>
+                    <input id="lightPoint-2-enable" type="checkbox"> Back Light
+                </div>
+            </fieldset>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="lightPositionX-0" class="pure-range">X </label>
+                    <input type="range" id="lightPositionX-0" value="-10.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionX-0-val');">
+                    <span id="lightPositionX-0-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionY-0" class="pure-range">Y </label>
+                    <input type="range" id="lightPositionY-0" value="4.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionY-0-val');">
+                    <span id="lightPositionY-0-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionZ-0" class="pure-range">Z </label> 
+                    <input type="range" id="lightPositionZ-0" value="-20.0" min="-100" max="100" oninput="showValue(this.value, 'lightPositionZ-0-val');">
+                    <span id="lightPositionZ-0-val"></span>
+                </div>
+            </fieldset>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="lightPositionX-1" class="pure-range">X </label>
+                    <input type="range" id="lightPositionX-1" value="10.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionX-1-val');">
+                    <span id="lightPositionX-1-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionY-1" class="pure-range">Y </label>
+                    <input type="range" id="lightPositionY-1" value="4.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionY-1-val');">
+                    <span id="lightPositionY-1-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionZ-1" class="pure-range">Z </label> 
+                    <input type="range" id="lightPositionZ-1" value="-20.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionZ-1-val');">
+                    <span id="lightPositionZ-1-val"></span>
+                </div>
+            </fieldset>
+            <fieldset>
+                <div class="pure-control-group">
+                    <label for="lightPositionX-2" class="pure-range">X </label>
+                    <input type="range" id="lightPositionX-2" value="10.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionX-2-val');">
+                    <span id="lightPositionX-2-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionY-2" class="pure-range">Y </label>
+                    <input type="range" id="lightPositionY-2" value="4.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionY-2-val');">
+                    <span id="lightPositionY-2-val"></span>
+                </div>
+                <div class="pure-control-group">
+                    <label for="lightPositionZ-2" class="pure-range">Z </label> 
+                    <input type="range" id="lightPositionZ-2" value="-20.0" min="-200" max="200" oninput="showValue(this.value, 'lightPositionZ-2-val');">
+                    <span id="lightPositionZ-2-val"></span>
                 </div>
             </fieldset>
         </form>
@@ -587,53 +658,46 @@ function showValue(newValue, tagId) {
     document.getElementById(tagId).innerHTML=newValue;
 }
 var webGLconfig = [
-    {
-        tag: 'shininess', value: 32.0
-    },
-    {
-        tag: 'lightPositionX', value: -10.0
-    },
-    {
-        tag: 'lightPositionY', value: 4.0
-    },
-    {
-        tag: 'lightPositionZ', value: -20.0
-    },
-    {
-        tag: 'specularR', value: 0.8
-    },
-    {
-        tag: 'specularG', value: 0.8
-    },
-    {
-        tag: 'specularB', value: 0.8
-    },
-    {
-        tag: 'diffuseR', value: 0.8
-    },
-    {
-        tag: 'diffuseG', value: 0.8
-    },
-    {
-        tag: 'diffuseB', value: 0.8
-    },
-    {
-        tag: 'ambientR', value: 0.2
-    },
-    {
-        tag: 'ambientG', value: 0.2
-    },
-    {
-        tag: 'ambientB', value: 0.2
-    },
+    {        tag: 'shininess', value: 32.0    },
+    {        tag: 'specularR', value: 0.8    },
+    {        tag: 'specularG', value: 0.8    },
+    {        tag: 'specularB', value: 0.8    },
+    {        tag: 'diffuseR', value: 0.8    },
+    {        tag: 'diffuseG', value: 0.8    },
+    {        tag: 'diffuseB', value: 0.8    },
+    {        tag: 'ambientR', value: 0.2    },
+    {        tag: 'ambientG', value: 0.2    },
+    {        tag: 'ambientB', value: 0.2    },
+];
+var webGLLightConfig = [
+    {        tag: 'lightPositionX-0', value: -10.0    },
+    {        tag: 'lightPositionY-0', value: 4.0    },
+    {        tag: 'lightPositionZ-0', value: -20.0    },
+    {        tag: 'lightPositionX-1', value: 90.0    },
+    {        tag: 'lightPositionY-1', value: -80.0    },
+    {        tag: 'lightPositionZ-1', value: -60.0    },
+    {        tag: 'lightPositionX-2', value: 100.0    },
+    {        tag: 'lightPositionY-2', value: 40.0    },
+    {        tag: 'lightPositionZ-2', value: -200.0    },
 ];
 function setDefaultConfig() {
+    document.getElementById("option-1").checked = true;
     for (var i in webGLconfig) {
         var tagId = webGLconfig[i].tag;
         var newValue = webGLconfig[i].value;
-        console.log(webGLconfig[i]);
         document.getElementById(tagId).value=newValue;
         document.getElementById(tagId + '-val').innerHTML=newValue;
+    }
+    for (var i in webGLLightConfig) {
+        var tagId = webGLLightConfig[i].tag;
+        var newValue = webGLLightConfig[i].value;
+        document.getElementById(tagId).value=newValue;
+        document.getElementById(tagId).min = -300;
+        document.getElementById(tagId).max = 300;
+        document.getElementById(tagId + '-val').innerHTML=newValue;
+    }
+    for (var i = 0; i < 3; i++) {
+        document.getElementById('lightPoint-' + i + '-enable').checked = true;
     }
 }
 setDefaultConfig();
