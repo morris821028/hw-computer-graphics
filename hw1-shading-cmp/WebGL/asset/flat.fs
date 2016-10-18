@@ -14,6 +14,7 @@ uniform vec3 uPointLightingSpecularColor;
 uniform vec3 uPointLightingDiffuseColor;
 uniform float uPointEnabled[3];
 
+
 void main(void) {
 	vec3 dx = dFdx(vVertexPosition);
 	vec3 dy = dFdy(vVertexPosition);

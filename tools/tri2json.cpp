@@ -30,59 +30,34 @@ struct Pt {
     }
 };
 
+Pt mergeMin(Pt a, Pt b) {
+	return Pt(min(a.x, b.x), min(a.y, b.y), min(a.z, b.z));
+}
+Pt mergeMax(Pt a, Pt b) {
+	return Pt(max(a.x, b.x), max(a.y, b.y), max(a.z, b.z));
+}
+
 void readLine(string line, float f[]) {
 	stringstream sin(line);
 	for (int i = 0; i < 6; i++) {
 		assert(sin >> f[i]);
 	}
 }
-int main(int argc, char *argv[]) {
-	if (argc == 2) {
-		if (!strcmp("--help", argv[1])) {
-			fprintf(stderr, "\t\t--format\t\tModel File Format\n\t\t\t\t"
-				"--format SIMPLE / --format COLOR\n");
-			exit(0);
-		}
-		exit(1);
-	}
-	if (argc < 5) {
-		fprintf(stderr, "./tri2json -i <filename.tri> -o <jsonname.json> [--format]\n");
-		fprintf(stderr, "./tri2json --help\n");
-		exit(1);
-	}
 
-	string ifileName = "", ofileName = "", fileFormat = "COLOR";
-
-	for (int i = 1; i < argc; i++) {
-		if (!strcmp(argv[i], "-i") && i+1 < argc) {
-			ifileName = argv[i+1], i++;
-		} else if (!strcmp(argv[i], "-o") && i+1 < argc) {
-			ofileName = argv[i+1], i++;
-		} else if (!strcmp(argv[i], "--format") && i+1 < argc) {
-			assert((!strcmp(argv[i+1], "COLOR") || !strcmp(argv[i+1], "SIMPLE")) && "Please check file format");
-			fileFormat = argv[i+1], i++;
-		}
-	}
-	assert(ifileName.length() && "Please give input file name");
-	assert(ofileName.length() && "Please give output file name");
-
+void runSimple(string ifileName, string ofileName) {
 	ifstream fin(ifileName);
 	ofstream fout(ofileName);
 
+
+	// read triangle
 	string objName;
 	vector<Tri> A;
+	Pt leftPt, rightPt;
+	bool hasLeft = false, hasRight = false;
 	while (getline(fin, objName)) {
 		string line;
 		float f[6];
 		Tri t;	
-
-		if (fileFormat == "COLOR") {
-			assert(getline(fin, line));
-			readLine(line, f);
-
-			for (int i = 0; i < 3; i++)
-				t.fc[i] = f[i], t.bc[i] = f[i+3];
-		}
 
 		for (int i = 0; i < 3; i++) {
 			assert(getline(fin, line));
@@ -91,18 +66,36 @@ int main(int argc, char *argv[]) {
 				t.vxyz[i][j] = f[j];
 				t.nxyz[i][j] = f[j+3];
 			}
-			float sc = 5.f;
-			t.vxyz[i][0] -= 400.0f * 10;
-			t.vxyz[i][0] /= sc;
-			t.vxyz[i][0] -= 220.0f;
-			t.vxyz[i][1] /= sc;
-			t.vxyz[i][1] -= 750.0f;
-			t.vxyz[i][2] -= 500.0f;
-			t.vxyz[i][2] /= sc;
+			Pt tmpPt(t.vxyz[i][0], t.vxyz[i][1], t.vxyz[i][2]);
+			if (hasLeft)
+				leftPt = mergeMin(leftPt, tmpPt);
+			else
+				hasLeft = true, leftPt = tmpPt;
+			if (hasRight)
+				rightPt = mergeMax(rightPt, tmpPt);
+			else
+				hasRight = true, rightPt = tmpPt;
 		}
 		A.push_back(t);
 	}
-	
+
+	// normalize bounding box 1 x 1 x 1
+	const float maxSide = max(max(rightPt.x-leftPt.x, rightPt.y-leftPt.y), rightPt.z-leftPt.z);
+	const float scale = 1.f / maxSide;
+	const float view_scale = 10.f;
+	for (int i = 0; i < A.size(); i++) {
+		float left[3] = {leftPt.x, leftPt.y, leftPt.z};
+		for (int j = 0; j < 3; j++)	 {
+			for (int k = 0; k < 3; k++) {
+				A[i].vxyz[j][k] -= left[k];
+				A[i].vxyz[j][k] *= scale;
+				A[i].vxyz[j][k] -= 0.5f;
+				A[i].vxyz[j][k] *= view_scale;
+			}
+		}
+	}
+
+	// compress data, relabel vertex
 	map< pair<Pt, Pt> , int> V;
 	for (int i = 0; i < A.size(); i++) {
 		Tri t = A[i];
@@ -120,6 +113,8 @@ int main(int argc, char *argv[]) {
 			e.second = label++;
 	}
 
+
+	// output json format
 	fout << "{" << endl;
 
 	fout << "\t\"vertexPositions\" : [";
@@ -145,6 +140,7 @@ int main(int argc, char *argv[]) {
 		fout << 0.5 << "," << 0.5 << "," << 0.5;
 	}
 	fout << "]," << endl;
+	
 
 	fout << "\t\"indices\" : [";
 	for (int i = 0; i < A.size(); i++) {
@@ -164,6 +160,180 @@ int main(int argc, char *argv[]) {
 
 	fout << "}" << endl;
 	printf("%d\n", V.size());
+}
+void runColor(string ifileName, string ofileName) {
+	ifstream fin(ifileName);
+	ofstream fout(ofileName);
+
+
+	// read triangle
+	string objName;
+	vector<Tri> A;
+	Pt leftPt, rightPt;
+	bool hasLeft = false, hasRight = false;
+	while (getline(fin, objName)) {
+		string line;
+		float f[6];
+		Tri t;	
+
+		assert(getline(fin, line));
+		readLine(line, f);
+
+		for (int i = 0; i < 3; i++)
+			t.fc[i] = f[i], t.bc[i] = f[i+3];
+
+		for (int i = 0; i < 3; i++) {
+			assert(getline(fin, line));
+			readLine(line, f);
+			for (int j = 0; j < 3; j++) {
+				t.vxyz[i][j] = f[j];
+				t.nxyz[i][j] = f[j+3];
+			}
+			Pt tmpPt(t.vxyz[i][0], t.vxyz[i][1], t.vxyz[i][2]);
+			if (hasLeft)
+				leftPt = mergeMin(leftPt, tmpPt);
+			else
+				hasLeft = true, leftPt = tmpPt;
+			if (hasRight)
+				rightPt = mergeMax(rightPt, tmpPt);
+			else
+				hasRight = true, rightPt = tmpPt;
+		}
+		A.push_back(t);
+	}
+
+	// normalize bounding box 1 x 1 x 1
+	const float maxSide = max(max(rightPt.x-leftPt.x, rightPt.y-leftPt.y), rightPt.z-leftPt.z);
+	const float scale = 1.f / maxSide;
+	const float view_scale = 10.f;
+	for (int i = 0; i < A.size(); i++) {
+		float left[3] = {leftPt.x, leftPt.y, leftPt.z};
+		for (int j = 0; j < 3; j++)	 {
+			for (int k = 0; k < 3; k++) {
+				A[i].vxyz[j][k] -= left[k];
+				A[i].vxyz[j][k] *= scale;
+				A[i].vxyz[j][k] -= 0.5f;
+				A[i].vxyz[j][k] *= view_scale;
+			}
+		}
+	}
+
+	// output json format
+	fout << "{" << endl;
+
+	fout << "\t\"colorful\": true," << endl;
+
+	fout << "\t\"vertexPositions\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			sz++;
+			fout << t.vxyz[j][0] << "," << t.vxyz[j][1] << "," << t.vxyz[j][2];
+		}
+	}
+	fout << "]," << endl;
+
+	fout << "\t\"vertexNormals\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			sz++;
+			fout << t.nxyz[j][0] << "," << t.nxyz[j][1] << "," << t.nxyz[j][2];
+		}
+	}
+	fout << "]," << endl;
+
+	fout << "\t\"vertexTextureCoords\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			sz++;
+			fout << 0.5f << "," << 0.5f << "," << 0.5f;
+		}
+	}
+
+	fout << "]," << endl;
+
+	fout << "\t\"vertexFrontColors\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			sz++;
+			fout << t.fc[0]/255.0 << "," << t.fc[1]/255.0 << "," << t.fc[2]/255.0;
+		}
+	}
+	fout << "]," << endl;
+
+	fout << "\t\"vertexBackColors\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			sz++;
+			fout << t.bc[0]/255.0 << "," << t.bc[1]/255.0 << "," << t.bc[2]/255.0;
+		}
+	}
+	fout << "]," << endl;
+
+	fout << "\t\"indices\" : [";
+	for (int i = 0, sz = 0; i < A.size(); i++) {
+		Tri t = A[i];
+		for (int j = 0; j < 3; j++) {
+			if (sz)
+				fout << ",";
+			fout << sz;
+			sz++;
+		}
+	}
+	fout << "]" << endl;
+
+	fout << "}" << endl;
+}
+
+int main(int argc, char *argv[]) {
+	if (argc == 2) {
+		if (!strcmp("--help", argv[1])) {
+			fprintf(stderr, "\t\t--format\t\tModel File Format\n\t\t\t\t"
+					"--format SIMPLE / --format COLOR\n");
+			exit(0);
+		}
+		exit(1);
+	}
+	if (argc < 5) {
+		fprintf(stderr, "./tri2json -i <filename.tri> -o <jsonname.json> [--format]\n");
+		fprintf(stderr, "./tri2json --help\n");
+		exit(1);
+	}
+
+	string ifileName = "", ofileName = "", fileFormat = "COLOR";
+
+	for (int i = 1; i < argc; i++) {
+		if (!strcmp(argv[i], "-i") && i+1 < argc) {
+			ifileName = argv[i+1], i++;
+		} else if (!strcmp(argv[i], "-o") && i+1 < argc) {
+			ofileName = argv[i+1], i++;
+		} else if (!strcmp(argv[i], "--format") && i+1 < argc) {
+			assert((!strcmp(argv[i+1], "COLOR") || !strcmp(argv[i+1], "SIMPLE")) && "Please check file format");
+			fileFormat = argv[i+1], i++;
+		}
+	}
+	assert(ifileName.length() && "Please give input file name");
+	assert(ofileName.length() && "Please give output file name");
+
+	if (fileFormat == "SIMPLE") {
+		runSimple(ifileName, ofileName);
+	} else {
+		runColor(ifileName, ofileName);
+	}
 	return 0;
 }
 

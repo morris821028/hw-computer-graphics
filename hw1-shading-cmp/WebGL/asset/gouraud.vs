@@ -2,6 +2,7 @@
 attribute vec3 aVertexPosition;
 attribute vec3 aVertexNormal;
 attribute vec2 aTextureCoord;
+attribute vec3 aVertexFrontColor;
 
 uniform mat4 uMVMatrix;
 uniform mat4 uPMatrix;
@@ -18,6 +19,7 @@ uniform vec3 uPointLightingSpecularColor;
 uniform vec3 uPointLightingDiffuseColor;
 
 uniform sampler2D uSampler;
+uniform int uTriangleColor;
 
 void main(void) {
     //vPosition = uMVMatrix * vec4(aVertexPosition, 1.0);
@@ -44,6 +46,10 @@ void main(void) {
     }
 
     vec4 fragmentColor;
-    fragmentColor = texture2D(uSampler, vec2(aTextureCoord.s, aTextureCoord.t));
+    if (uTriangleColor == 0) {
+        fragmentColor = texture2D(uSampler, vec2(aTextureCoord.s, aTextureCoord.t));
+    } else {
+        fragmentColor = vec4(aVertexFrontColor, 1.0);
+    }
     fragcolor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
 }
