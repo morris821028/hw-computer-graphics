@@ -1,0 +1,9 @@
+{
+	"colorful": true,
+    "vertexPositions" : [0, 0, 0, 10, 0, 0, 0, 5, -10],
+    "vertexNormals" : [0, 1, 0, 0, 1, 0, 0, 1, 0],
+    "vertexTextureCoords" : [0, 0, 1, 1, 0.5, 0.5],
+    "vertexFrontColors" : [1, 0, 0, 1, 0, 0, 1, 0, 0],
+    "vertexBackColors" : [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "indices" : [0,2,1]
+}

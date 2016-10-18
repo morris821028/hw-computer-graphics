@@ -7,6 +7,7 @@ varying vec2 vTextureCoord;
 varying vec3 vLightDirection[3];
 varying vec3 vNormalDirection;
 varying vec3 vVertexPosition;
+varying vec3 vVertexFrontColor;
 
 uniform float uMaterialShininess;
 
@@ -16,6 +17,8 @@ uniform vec3 uPointLightingDiffuseColor;
 uniform float uPointEnabled[3];
 
 uniform sampler2D uSampler;
+
+uniform int uTriangleColor;
 
 void main(void) {
 	vec3 tn = vNormalDirection;
@@ -37,7 +40,12 @@ void main(void) {
             + uPointLightingSpecularColor * specularLightWeighting
             + uPointLightingDiffuseColor * diffuseLightWeighting;
     }
-	vec4 fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+	vec4 fragmentColor;
+    if (uTriangleColor == 0) {
+        fragmentColor = texture2D(uSampler, vec2(vTextureCoord.s, vTextureCoord.t));
+    } else {
+        fragmentColor = vec4(vVertexFrontColor, 1.0);
+    }
 	gl_FragColor = vec4(fragmentColor.rgb * lightWeighting, fragmentColor.a);
 }
 // </script>

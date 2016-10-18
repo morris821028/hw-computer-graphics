@@ -14,6 +14,7 @@
 <script type="text/javascript">
 
     var gl, vs_src, fs_src;
+    var teapotData;
 
     function initGL(canvas) {
         try {
@@ -47,7 +48,18 @@
         // var text = loadFile("asset/triangle.json");
         // var text = loadFile("asset/Pot.json");
         // var text = loadFile("asset/Patchair.json");
-        return handleLoadedTeapot(JSON.parse(text));
+        // var text = loadFile("asset/Csie.json");
+        // var text = loadFile("asset/F1.json");
+        // var text = loadFile("asset/triangle-color.json");
+        // var text = loadFile("asset/Kangaroo.json");
+        // var text = loadFile("asset/Plant.json");
+        // var text = loadFile("asset/Tomcat.json");
+        // var text = loadFile("asset/Fighter.json");
+        // var text = loadFile("asset/Longteap.json");
+        // var text = loadFile("asset/Mercedes.json");
+        // var text = loadFile("asset/Mig27.json");
+        teapotData = JSON.parse(text);
+        return teapotData;
     }
     function loadShaderSource(vs_path, fs_path) {
         vs_src = loadFile(vs_path);
@@ -105,6 +117,16 @@
         shaderProgram.textureCoordAttribute = gl.getAttribLocation(shaderProgram, "aTextureCoord");
         gl.enableVertexAttribArray(shaderProgram.textureCoordAttribute);
 
+        if (teapotData.colorful === true) {
+            shaderProgram.vertexFrontColor = gl.getAttribLocation(shaderProgram, "aVertexFrontColor");
+            if (shaderProgram.vertexFrontColor >= 0)
+                gl.enableVertexAttribArray(shaderProgram.vertexFrontColor);
+/*
+            shaderProgram.vertexBackColor = gl.getAttribLocation(shaderProgram, "aVertexBackColor");
+            gl.enableVertexAttribArray(shaderProgram.vertexBackColor);
+*/
+        }
+
         shaderProgram.pMatrixUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
         shaderProgram.mvMatrixUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
         shaderProgram.nMatrixUniform = gl.getUniformLocation(shaderProgram, "uNMatrix");
@@ -116,6 +138,7 @@
         shaderProgram.pointLightingLocationUniform = gl.getUniformLocation(shaderProgram, "uPointLightingLocation");
         shaderProgram.pointLightingSpecularColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingSpecularColor");
         shaderProgram.pointLightingDiffuseColorUniform = gl.getUniformLocation(shaderProgram, "uPointLightingDiffuseColor");
+        shaderProgram.triangleColor = gl.getUniformLocation(shaderProgram, "uTriangleColor");
         return shaderProgram;
     }
 
@@ -177,6 +200,8 @@
     var teapotVertexNormalBuffer;
     var teapotVertexTextureCoordBuffer;
     var teapotVertexIndexBuffer;
+    var teapotVertexFrontColorBuffer;
+    var teapotVertexBackColorBuffer;
 
     function handleLoadedTeapot(teapotData) {
         teapotVertexNormalBuffer = gl.createBuffer();
@@ -202,6 +227,22 @@
         gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(teapotData.indices), gl.STATIC_DRAW);
         teapotVertexIndexBuffer.itemSize = 1;
         teapotVertexIndexBuffer.numItems = teapotData.indices.length;
+
+        if (teapotData.colorful) {
+            teapotVertexFrontColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexFrontColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(teapotData.vertexFrontColors), gl.STATIC_DRAW);
+
+            teapotVertexFrontColorBuffer.itemSize = 3;
+            teapotVertexFrontColorBuffer.numItems = teapotData.vertexFrontColors.length / 3;
+/*
+            teapotVertexBackColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexBackColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(teapotData.vertexBackColors), gl.STATIC_DRAW);
+            teapotVertexBackColorBuffer.itemSize = 3;
+            teapotVertexBackColorBuffer.numItems = teapotData.vertexBackColors.length / 3;
+*/
+        }
 
         document.getElementById("loadingtext").textContent = "";
     }
@@ -260,6 +301,8 @@
             parseFloat(document.getElementById("diffuseB").value)
         );
 
+        gl.uniform1i(shaderProgram.triangleColor, teapotData.colorful === true ? 1 : 0);
+
         gl.activeTexture(gl.TEXTURE0);
 
         gl.bindTexture(gl.TEXTURE_2D, galvanizedTexture);
@@ -277,6 +320,14 @@
         gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexNormalBuffer);
         gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute, teapotVertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0);
 
+        if (teapotData.colorful === true) {
+            gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexFrontColorBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexFrontColor, teapotVertexFrontColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+/*
+            gl.bindBuffer(gl.ARRAY_BUFFER, teapotVertexBackColorBuffer);
+            gl.vertexAttribPointer(shaderProgram.vertexBackColor, teapotVertexBackColorBuffer.itemSize, gl.FLOAT, false, 0, 0);
+*/
+        }
     }
 
     function drawSceneBegin() {
@@ -388,11 +439,13 @@
     function handleKeys() {
         if (currentlyPressedKeys[33]) {
             // Page Up
-            eyeview.z -= 0.05;
+            // eyeview.z -= 0.05;
+            eyeview.z -= 1.00;
         }
         if (currentlyPressedKeys[34]) {
             // Page Down
-            eyeview.z += 0.05;
+            // eyeview.z += 0.05;
+            eyeview.z += 1.00;
         }
         if (currentlyPressedKeys[37]) {
             // Left cursor key
@@ -430,12 +483,14 @@
 
 
     function webGLStart() {
+        loadTeapot();
+
         var canvas = document.getElementById("ICG-canvas");
         initGL(canvas);
         loadShaders();
-        // initShaders(document.querySelector('input[name="optionsShading"]:checked').value);
         initTextures();
-        loadTeapot();
+
+        handleLoadedTeapot(teapotData);
 
         gl.clearColor(0.0, 0.2, 0.2, 1.0);
         gl.enable(gl.DEPTH_TEST);
@@ -453,7 +508,7 @@
     }
 
     function handleShading(elem) {
-        initShaders(initShaders(document.querySelector('input[name="optionsShading"]:checked').value));
+        initShaders(document.querySelector('input[name="optionsShading"]:checked').value);
     }
 </script>
 
