@@ -784,6 +784,11 @@ function showValue(newValue, tagId) {
     document.getElementById(tagId).innerHTML=newValue;
 }
 setDefaultConfig();
+window.onkeydown = function(e){
+   if (e.keycode == 33 || e.keycode == 34 || e.keycode == 38 || e.keycode == 40) {
+       e.preventDefault();
+   }
+}
 </script>
 </body>
 
