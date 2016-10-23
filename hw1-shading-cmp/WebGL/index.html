@@ -7,7 +7,7 @@
 
     <script type="text/javascript" src="javascripts/glMatrix-0.9.5.min.js"></script>
     <script type="text/javascript" src="javascripts/webgl-utils.js"></script>
-    <script type="text/javascript" src="javascripts/vue.min.js"></script>
+    <script type="text/javascript" src="javascripts/marked.js"></script>
 
     <link rel="stylesheet" href="stylesheets/pure-0.6.0/pure-min.css">
 
@@ -544,7 +544,6 @@
     }
     function changeModel(model) {
         modelName = "asset/" + model + ".json";
-        console.log(modelName);
         webGLStart();
     }
 </script>
@@ -773,7 +772,14 @@ body {
     </div>
 </div>
 
+<div class="pure-g" style="margin: auto;">
+    <div class="pure-u-1" id='README' style="overflow-y: auto; height: 600px; background: white; padding: 20px;margin: 5%; font-family: Georgia, Times, 'Times New Roman', Microsoft JhengHei;">
+
+    </div>
+</div>
+
 <script type="text/javascript">
+document.getElementById('README').innerHTML = marked(loadFile('README.md'));
 function showValue(newValue, tagId) {
     document.getElementById(tagId).innerHTML=newValue;
 }
