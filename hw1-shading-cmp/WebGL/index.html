@@ -80,7 +80,7 @@
         };
     }
     function initShader(shading_method) {
-        loadShaderSource("asset/" + shading_method + ".vs", "asset/" + shading_method + ".fs");
+        loadShaderSource("lib/" + shading_method + ".vs", "lib/" + shading_method + ".fs");
 
         var fragmentShader = makeShader(gl, fs_src, gl.FRAGMENT_SHADER);
         var vertexShader = makeShader(gl, vs_src, gl.VERTEX_SHADER);
