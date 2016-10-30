@@ -341,7 +341,7 @@
 
         mat4.identity(mvMatrix);
 
-        mat4.translate(mvMatrix, [0, 0, eyeview.z]);
+        mat4.translate(mvMatrix, [eyeview.x, eyeview.y, eyeview.z]);
         mat4.translate(mvMatrix, extraMvArr);
         mat4.scale(mvMatrix, extraScArr);
         mat4.rotate(mvMatrix, degToRad(eyeview.xRot), [1, 0, 0]);
@@ -427,13 +427,27 @@
     function handleKeys() {
         if (currentlyPressedKeys[33]) {
             // Page Up
-            // eyeview.z -= 0.05;
             eyeview.z -= 1.00;
         }
         if (currentlyPressedKeys[34]) {
             // Page Down
-            // eyeview.z += 0.05;
             eyeview.z += 1.00;
+        }
+        if (currentlyPressedKeys[45]) {
+            // Insert
+            eyeview.x -= 1.00;
+        }
+        if (currentlyPressedKeys[46]) {
+            // Delete
+            eyeview.x += 1.00;
+        }
+        if (currentlyPressedKeys[36]) {
+            // Home
+            eyeview.y -= 1.00;
+        }
+        if (currentlyPressedKeys[35]) {
+            // End
+            eyeview.y += 1.00;
         }
         if (currentlyPressedKeys[37]) {
             // Left cursor key
@@ -595,7 +609,7 @@ body {
                     margin: 2px 1px;
                 }
             </style>
-            <legend>Shape</legend>
+            <h3>Model</h3>
             <button class="pure-button" onclick="changeModel('teapot')">teapot</button>
             <button class="pure-button" onclick="changeModel('triangle')">triangle</button>
             <button class="pure-button" onclick="changeModel('Pot')">Pot</button>
