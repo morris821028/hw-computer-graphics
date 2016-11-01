@@ -7,6 +7,8 @@
 * 使用 __Home/End__ 控制物體 y-axis
 * 使用 __Insert/Delete__ 控制物體 x-axis
 * 使用 __滑鼠拖曳__ 旋轉物體
+* 使用 __Tab/Alt__ shear 物體
+* 使用 __Shift/Ctrl__ scale 物體
 
 ### 程式細節 ###
 
