@@ -241,6 +241,10 @@
         xSpeed: 0,
         yRot: 0,
         ySpeed: 0,
+        xScale: 1,
+        yScale: 1,
+        zScale: 1,
+        xShear: 0,
         x: 0,
         y: 0,
         z: -40,
@@ -342,10 +346,18 @@
         mat4.identity(mvMatrix);
 
         mat4.translate(mvMatrix, [eyeview.x, eyeview.y, eyeview.z]);
+        extraScArr[0] *= eyeview.xScale;
+        extraScArr[1] *= eyeview.yScale;
+        extraScArr[2] *= eyeview.zScale;
         mat4.translate(mvMatrix, extraMvArr);
         mat4.scale(mvMatrix, extraScArr);
         mat4.rotate(mvMatrix, degToRad(eyeview.xRot), [1, 0, 0]);
         mat4.rotate(mvMatrix, degToRad(eyeview.yRot), [0, 1, 0]);
+
+        var newShearMatrix = mat4.create();
+        mat4.identity(newShearMatrix);
+        newShearMatrix[1] = eyeview.xShear;
+        mat4.multiply(newShearMatrix, mvMatrix, mvMatrix);
 
         mat4.multiply(mvMatrix, sphereRotationMatrix);
 
@@ -402,7 +414,7 @@
         mat4.rotate(newRotationMatrix, degToRad(deltaY / 10), [1, 0, 0]);
 
         mat4.multiply(newRotationMatrix, sphereRotationMatrix, sphereRotationMatrix);
-
+        
         lastMouseX = newX
         lastMouseY = newY;
     }
@@ -464,6 +476,18 @@
         if (currentlyPressedKeys[40]) {
             // Down cursor key
             eyeview.xSpeed += 1;
+        }
+        if (currentlyPressedKeys[16]) {
+            eyeview.xScale += 0.1;
+        }
+        if (currentlyPressedKeys[17]) {
+            eyeview.xScale -= 0.1;
+        }
+        if (currentlyPressedKeys[18]) {
+            eyeview.xShear += 0.01;
+        }
+        if (currentlyPressedKeys[9]) {
+            eyeview.xShear -= 0.01;
         }
     }
 
