@@ -26,6 +26,13 @@ $ ./error-diffusion <quant_number>
 ```bash
 $ cat sample.in
 $ ./error-diffusion 2 <sample.in
+Case #1:
+[6 6 4]
+[2 2 4]
+[4 8 6]
+Case #2:
+[2 4]
+[6 2]
 ```
 
 or
@@ -35,6 +42,9 @@ $ ./error-diffusion 2
 2 2
 3 5
 7 1
+Case #1:
+[2 4]
+[6 2]
 ```
 
 
