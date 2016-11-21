@@ -12,18 +12,32 @@
 
 ### 程式細節 ###
 
+
 #### 變數修飾 ####
 
 [參考](http://www.lighthouse3d.com/tutorials/glsl-tutorial/data-types-and-variables/)
 
 Qualifiers give a special meaning to the variable. The following qualifiers are available:
 
-* `const` – The declaration is of a compile time constant.
-* `attribute` – Global variables that may change per vertex, that are passed from the OpenGL application to vertex shaders. This qualifier can only be used in vertex shaders. For the shader this is a read-only variable. See Attribute section.
-* `uniform` – Global variables that may change per primitive [...], that are passed from the OpenGL application to the shaders. This qualifier can be used in both vertex and fragment shaders. For the shaders this is a read-only variable. See Uniform section.
-* `varying` – used for interpolated data between a vertex shader and a fragment shader. Available for writing in the vertex shader, and read-only in a fragment shader.
+* `const` – 編譯時期就得決定好的常數
+* `attribute` – 屬於頂點的全區變數，用於 vertex shader 中唯讀使用。
+* `uniform` – 屬於 primitive 的全區變數，可以同時在 vertex shader 和 fragment shader 中唯讀使用。
+* `varying` – 收集在 vertex shader 的變數，自動雙性內插後，在 fragment shader 呈現。在 vertex shader 寫入，在 fragment shader 唯讀。
 
 由於 varying 自動雙內插，在 flat 渲染器中必須使用 [OES_standard_derivatives](https://developer.mozilla.org/zh-TW/docs/Web/API/OES_standard_derivatives) 避開自動內插計算。
+
+#### 錯切變換 Shear Transformation ####
+
+測試過程中，找不到錯切變換相關的 API，只好手動建立 Shear Matrix，其結果如下：
+
+```js
+var newShearMatrix = mat4.create();
+mat4.identity(newShearMatrix);
+newShearMatrix[1] = eyeview.xShear;
+```
+
+由於 `mat4` 實作採用 row-major 的方式存取，會把 `[0..3][0..3]` 攤平成 `[0..15]`。當要改 `m[0][1]` 的係數時，直接修改 `m[1]` 即可。
+
 
 #### 轉換模型 ####
 
