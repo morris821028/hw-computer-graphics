@@ -13,15 +13,18 @@ public class tankShoot : MonoBehaviour
     public float mExplosionRadius = 100f;
     public float mExplosionForce = 1e+20f;
 
+    public int[] mAmmoAmount;
     // private
     private Rigidbody[] mShells;
     private float mBarrelAngle = 0f;
     private string mMovementAxisName;
     private string mBarrelAngleAxisName;
+    private string mAmmoInputPrefixName;
     private string mFireButton;
 
     private float mMovementInputValue;
     private float mTurnInputValue;
+    private int mAmmoSelectIndex;
 
     private float mCurrentLaunchForce = 30f;
     private bool mFired;
@@ -30,13 +33,19 @@ public class tankShoot : MonoBehaviour
     {
         mMovementAxisName = "Mouse X";
         mBarrelAngleAxisName = "Mouse ScrollWheel";
+        mAmmoInputPrefixName = "AmmoType";
         mFireButton = "Fire1";
         GameObject[] shellObjects = Resources.LoadAll<GameObject>("Shell");
         Debug.Log(shellObjects.Length);
 
         mShells = new Rigidbody[shellObjects.Length];
+        mAmmoAmount = new int[shellObjects.Length];
         for (int i = 0; i < mShells.Length; i++)
+        {
             mShells[i] = shellObjects[i].GetComponent<Rigidbody>();
+            mAmmoAmount[i] = 30;
+        }
+        mAmmoSelectIndex = 0;
     }
 
     // Update is called once per frame
@@ -53,6 +62,13 @@ public class tankShoot : MonoBehaviour
         } else if (Input.GetButtonUp(mFireButton) && !mFired)
         {
             Fire();
+        }
+        for (int i = 0; i < mShells.Length; i++)
+        {
+            if (Input.GetButtonDown(mAmmoInputPrefixName+i))
+            {
+                mAmmoSelectIndex = i;
+            }
         }
     }
     private void FixedUpdate()
@@ -78,10 +94,12 @@ public class tankShoot : MonoBehaviour
     private void Fire()
     {
         mFired = true;
-
+        int t = mAmmoSelectIndex;
+        if (mAmmoAmount[t] <= 0)
+            return;
         Rigidbody shellInstance = (Rigidbody)
-                Instantiate(mShells[1], mFirePoint.transform.position, mFirePoint.transform.rotation);
-
+                Instantiate(mShells[t], mFirePoint.transform.position, mFirePoint.transform.rotation);
+        mAmmoAmount[t]--;
         shellInstance.velocity = mCurrentLaunchForce * mFirePoint.transform.TransformDirection(new Vector3(0, 1, 0));
         Physics.IgnoreCollision(mFirePoint.transform.root.GetComponent<Collider>(), shellInstance.GetComponent<Collider>());
         
