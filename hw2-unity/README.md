@@ -16,6 +16,11 @@
 	* 建立怪物角色，可攻擊玩家人物，玩家亦可用武器消滅它
 
 
+### Reference ###
+
+* [Unity - PathFollowing 路徑移動、定點巡邏](https://home.gamer.com.tw/creationDetail.php?sn=2504559)
+* [Unity - Cannot position child object relative to parent?](http://answers.unity3d.com/questions/841072/cannot-position-child-object-relative-to-parent.html)
+
 ### Special Thanks ###
 
-* [Judy Ku](https://github.com/kucw)
+* [Judy Ku(https://github.com/kucw)
