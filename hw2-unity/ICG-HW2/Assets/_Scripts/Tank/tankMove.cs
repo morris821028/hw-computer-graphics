@@ -68,7 +68,6 @@ public class tankMove : MonoBehaviour
             mSpeed = mMinSpeed;
         }
         Vector3 moveVec = transform.forward * mMovementInputValue * (-mSpeed) * Time.deltaTime;
-
         mRigidbody.MovePosition(mRigidbody.position + moveVec);
     }
 
