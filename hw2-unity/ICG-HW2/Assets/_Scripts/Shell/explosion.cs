@@ -31,12 +31,8 @@ public class explosion : MonoBehaviour
             if (!targetHealth)
                 continue;
             float damage = 10f;
-
-            if (colliders[i].gameObject.tag == "enemy")
-            {
-                Debug.Log("TakeDamge");
-                targetHealth.TakeDamage(damage);
-            }
+            
+            targetHealth.TakeDamage(damage);
         }
     }
     void OnCollisionEnter(Collision collision)

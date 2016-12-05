@@ -52,6 +52,10 @@ public class AIShoot : MonoBehaviour
         }
         mAmmoSelectIndex = 0;
         mFireTime = Time.time;
+        
+        Vector3 dV = this.transform.position - this.transform.root.position;
+        Quaternion rotation = Quaternion.LookRotation(dV);
+        mBaseAngle = rotation.y;
     }
 
     // Update is called once per frame
@@ -71,17 +75,29 @@ public class AIShoot : MonoBehaviour
 
     private void Turn()
     {
+        Vector3 dV;
+        Quaternion rotation;
         if (Vector3.Distance(gameObject.transform.position, mTargetObject.transform.position) > mDetectRange)
-            return;
+        {
+            dV = this.transform.position - this.transform.root.position;
+            rotation = Quaternion.LookRotation(dV);
+        }
+        else
+        {
+            dV = mTargetObject.transform.position - gameObject.transform.position;
+            rotation = Quaternion.LookRotation(dV);
+        }
 
         // Calcuate turn angle by relative position
-        Vector3 dV = mTargetObject.transform.position - gameObject.transform.position;
-        Quaternion rotation = Quaternion.LookRotation(dV);
         rotation.x = 0f;
         rotation.z = 0f;
 
         float turnAngle = rotation.y;
-
+        if (Mathf.Abs(turnAngle) < 0.01f || 1f - Mathf.Abs(turnAngle) < 0.01f)
+            return;
+        rotation.y = mBaseAngle;
+        mBaseAngle += Mathf.Clamp((turnAngle - mBaseAngle)/100f, -1f, 1f);
+        // Debug.Log(turnAngle.ToString("F5"));
         this.transform.rotation = rotation;
         this.transform.Rotate(-90f, 180f, 0f);
         
