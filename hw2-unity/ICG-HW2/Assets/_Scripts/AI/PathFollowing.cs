@@ -50,15 +50,17 @@ public class PathFollowing : MonoBehaviour {
         // Debug.Log(dV.ToString("F5"));
 
         // mRigidbody.MovePosition(mRigidbody.position + curVelocity);
+
         Vector3 forward = gameObject.transform.forward;
         float turnAngle = 0f;
         turnAngle = Vector2.Angle(new Vector2(-forward.x, -forward.z), new Vector2(dV.x, dV.z));
         if (Vector3.Cross(new Vector2(-forward.x, -forward.z), new Vector2(dV.x, dV.z)).z < 0)
             turnAngle = -turnAngle;
         turnAngle = Mathf.Clamp(turnAngle, -180f, 180f);
-        if (180f - Mathf.Abs(turnAngle) > 10 && Mathf.Abs(turnAngle) > 10)
+
+        if (180f - Mathf.Abs(turnAngle) > 5 && Mathf.Abs(turnAngle) > 5)
         {
-            Debug.Log(turnAngle);
+            // Debug.Log(turnAngle);
             turnAngle /= 180f;
             turnAngle *= mTurnSpeed;
             Quaternion turnRotation = Quaternion.Euler(0f, -turnAngle, 0f);
