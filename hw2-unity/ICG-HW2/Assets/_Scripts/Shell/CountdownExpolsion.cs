@@ -47,11 +47,7 @@ public class CountdownExpolsion : MonoBehaviour {
                     continue;
                 float damage = 5f;
 
-                if (colliders[i].gameObject.tag == "enemy")
-                {
-                    Debug.Log("TakeDamge");
-                    targetHealth.TakeDamage(damage);
-                }
+                targetHealth.TakeDamage(damage);
             }
 
             DestroyObject(gameObject);

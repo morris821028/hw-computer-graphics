@@ -15,8 +15,8 @@ public class tankShoot : MonoBehaviour
 
     public int[] mAmmoAmount;
     // private
-    private Rigidbody[] mShells;
-    private GameObject[] mShellObjects;
+    [HideInInspector] public Rigidbody[] mShells;
+    [HideInInspector] public GameObject[] mShellObjects;
     private float mBarrelAngle = 0f;
     private string mMovementAxisName;
     private string mBarrelAngleAxisName;
