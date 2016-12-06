@@ -13,7 +13,7 @@ public class AIShoot : MonoBehaviour
 
     public float mBaseAngle = 0;
     public float mBaseSpeed = 1f;
-    public float mBaseMaxAngle = 5f; 
+    public float mBaseMaxAngle = 5f;
 
     public float mTowerSpeed = 6;
     public float mExplosionRadius = 100f;
@@ -38,6 +38,7 @@ public class AIShoot : MonoBehaviour
     private float mCurrentLaunchForce = 30f;
     private bool mFired;
     private float mFireTime;
+    private bool mBaseFirstFlag = true;
     // Use this for initialization
     void Start()
     {
@@ -52,7 +53,7 @@ public class AIShoot : MonoBehaviour
         }
         mAmmoSelectIndex = 0;
         mFireTime = Time.time;
-        
+
         Vector3 dV = this.transform.position - this.transform.root.position;
         Quaternion rotation = Quaternion.LookRotation(dV);
         mBaseAngle = rotation.y;
@@ -88,6 +89,12 @@ public class AIShoot : MonoBehaviour
             rotation = Quaternion.LookRotation(dV);
         }
 
+        if (mBaseFirstFlag)
+        {
+            mBaseAngle = Quaternion.LookRotation(this.transform.position - this.transform.root.position).y;
+            mBaseFirstFlag = false;
+        }
+
         // Calcuate turn angle by relative position
         rotation.x = 0f;
         rotation.z = 0f;
@@ -96,11 +103,11 @@ public class AIShoot : MonoBehaviour
         if (Mathf.Abs(turnAngle) < 0.01f || 1f - Mathf.Abs(turnAngle) < 0.01f)
             return;
         rotation.y = mBaseAngle;
-        mBaseAngle += Mathf.Clamp((turnAngle - mBaseAngle)/100f, -1f, 1f);
+        mBaseAngle += Mathf.Clamp((turnAngle - mBaseAngle) / 10f, -0.1f, 0.1f);
         // Debug.Log(turnAngle.ToString("F5"));
         this.transform.rotation = rotation;
         this.transform.Rotate(-90f, 180f, 0f);
-        
+
         /*
         mBarrelAngle += mTurnInputValue * mBarrelSpeed;
         mBarrelAngle = Mathf.Clamp(mBarrelAngle, mBarrelMinAngle, mBarrelMaxAngle);

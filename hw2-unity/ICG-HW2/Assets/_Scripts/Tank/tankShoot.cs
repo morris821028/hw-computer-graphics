@@ -16,6 +16,7 @@ public class tankShoot : MonoBehaviour
     public int[] mAmmoAmount;
     // private
     private Rigidbody[] mShells;
+    private GameObject[] mShellObjects;
     private float mBarrelAngle = 0f;
     private string mMovementAxisName;
     private string mBarrelAngleAxisName;
@@ -26,7 +27,7 @@ public class tankShoot : MonoBehaviour
     private float mTurnInputValue;
     private int mAmmoSelectIndex;
 
-    private float mCurrentLaunchForce = 30f;
+    private float mCurrentLaunchForce = 100f;
     private bool mFired;
     // Use this for initialization
     void Start()
@@ -35,13 +36,13 @@ public class tankShoot : MonoBehaviour
         mBarrelAngleAxisName = "Mouse ScrollWheel";
         mAmmoInputPrefixName = "AmmoType";
         mFireButton = "Fire1";
-        GameObject[] shellObjects = Resources.LoadAll<GameObject>("Shell");
+        mShellObjects = Resources.LoadAll<GameObject>("Shell");
 
-        mShells = new Rigidbody[shellObjects.Length];
-        mAmmoAmount = new int[shellObjects.Length];
+        mShells = new Rigidbody[mShellObjects.Length];
+        mAmmoAmount = new int[mShellObjects.Length];
         for (int i = 0; i < mShells.Length; i++)
         {
-            mShells[i] = shellObjects[i].GetComponent<Rigidbody>();
+            mShells[i] = mShellObjects[i].GetComponent<Rigidbody>();
             mAmmoAmount[i] = 30;
         }
         mAmmoSelectIndex = 0;
@@ -98,6 +99,7 @@ public class tankShoot : MonoBehaviour
             return;
         Rigidbody shellInstance = (Rigidbody)
                 Instantiate(mShells[t], mFirePoint.transform.position, mFirePoint.transform.rotation);
+        shellInstance.transform.rotation = Quaternion.LookRotation(mFirePoint.transform.TransformDirection(new Vector3(0, 1, 0)));
         mAmmoAmount[t]--;
         shellInstance.velocity = mCurrentLaunchForce * mFirePoint.transform.TransformDirection(new Vector3(0, 1, 0));
         Physics.IgnoreCollision(mFirePoint.transform.root.GetComponent<Collider>(), shellInstance.GetComponent<Collider>());
