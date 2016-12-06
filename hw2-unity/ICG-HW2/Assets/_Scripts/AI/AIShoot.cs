@@ -128,6 +128,7 @@ public class AIShoot : MonoBehaviour
         */
         Rigidbody shellInstance = (Rigidbody)
                 Instantiate(mShells[t], mFirePoint.transform.position, mFirePoint.transform.rotation);
+        shellInstance.transform.rotation = Quaternion.LookRotation(mFirePoint.transform.TransformDirection(new Vector3(0, 1, 0)));
         mAmmoAmount[t]--;
         shellInstance.velocity = mCurrentLaunchForce * mFirePoint.transform.TransformDirection(new Vector3(0, 1, 0));
         Physics.IgnoreCollision(mFirePoint.transform.root.GetComponent<Collider>(), shellInstance.GetComponent<Collider>());
