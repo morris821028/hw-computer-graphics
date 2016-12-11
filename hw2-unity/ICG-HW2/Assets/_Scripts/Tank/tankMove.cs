@@ -19,10 +19,12 @@ public class tankMove : MonoBehaviour
     private float mTurnInputValue;
 
     private float mBarrelAngle;
+    private TankMoveEffect mTankMoveEffect;
 
     private void Awake()
     {
         mRigidbody = GetComponent<Rigidbody>();
+        mTankMoveEffect = GetComponent<TankMoveEffect>();
         mSpeed = mMinSpeed;
     }
     private void OnEnable()
@@ -68,6 +70,7 @@ public class tankMove : MonoBehaviour
             mSpeed = mMinSpeed;
         }
         Vector3 moveVec = transform.forward * mMovementInputValue * (-mSpeed) * Time.deltaTime;
+        mTankMoveEffect.Move(mMovementInputValue * (-mSpeed));
         mRigidbody.MovePosition(mRigidbody.position + moveVec);
     }
 
@@ -76,7 +79,7 @@ public class tankMove : MonoBehaviour
         float turnAngle = mTurnInputValue * mTurnSpeed * Time.deltaTime;
 
         Quaternion turnRotation = Quaternion.Euler(0f, turnAngle, 0f);
-
+        mTankMoveEffect.Turn(turnAngle);
         mRigidbody.MoveRotation(mRigidbody.rotation * turnRotation);
     }
 }

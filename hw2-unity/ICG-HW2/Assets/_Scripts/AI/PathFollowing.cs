@@ -17,13 +17,14 @@ public class PathFollowing : MonoBehaviour {
     private Vector3 curVelocity;
     
     private Rigidbody mRigidbody;
-
+    private TankMoveEffect mTankMoveEffect;
     // Use this for initialization
     void Start () {
         pathLength = path.Length;
         curPathIndex = 0;
         curVelocity = transform.forward;
         mRigidbody = GetComponent<Rigidbody>();
+        mTankMoveEffect = GetComponent<TankMoveEffect>();
     }
 	
 	// Update is called once per frame
@@ -65,8 +66,10 @@ public class PathFollowing : MonoBehaviour {
             turnAngle *= mTurnSpeed;
             Quaternion turnRotation = Quaternion.Euler(0f, -turnAngle, 0f);
             mRigidbody.MoveRotation(mRigidbody.rotation * turnRotation);
+            mTankMoveEffect.Turn(-turnAngle);
         } else
         {
+            mTankMoveEffect.Move(curVelocity.magnitude*10);
             mRigidbody.MovePosition(mRigidbody.position + curVelocity);
         }
 	}
