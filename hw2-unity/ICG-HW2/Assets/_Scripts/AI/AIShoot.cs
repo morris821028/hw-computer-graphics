@@ -108,6 +108,12 @@ public class AIShoot : MonoBehaviour
         this.transform.rotation = rotation;
         this.transform.Rotate(-90f, 180f, 0f);
 
+        Vector3 dP = (mTargetObject.transform.position - this.transform.root.position);
+        Debug.Log(dP.ToString("F5"));
+        float theta = Mathf.Asin(-dP.y / Mathf.Sqrt(dP.x * dP.x + dP.z * dP.z));
+        theta = Mathf.Rad2Deg * theta;
+        Debug.Log(theta.ToString("F5"));
+        mBarrelObject.transform.rotation = rotation * Quaternion.Euler(90f+theta+5f, 0, 0);
         /*
         mBarrelAngle += mTurnInputValue * mBarrelSpeed;
         mBarrelAngle = Mathf.Clamp(mBarrelAngle, mBarrelMinAngle, mBarrelMaxAngle);
